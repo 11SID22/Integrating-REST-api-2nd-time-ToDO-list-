@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-do-list</title>
+</head>
+<body>
+    <form onsubmit="toDoList(event)">
+    <label for="task">ToDO Name:</label>
+    <input type="text" name="task" id="task1">
+    <label for="text">Description:</label>
+    <input type="text" name="text" id="text1">
+    <button>Add item</button>
+    </form>
+
+    <div class="container1">
+        <p>ToDos in Progress:</p>
+        <ul id="list1"></ul>
+    </div>
+    <div class="container2">
+        <p>ToDos Done:</p>
+        <ul id="list2"></ul>
+     </div>
+     
+     
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+
+     <script>
+        function toDoList(event){
+            event.preventDefault();
+
+            const task = event.target.task.value;
+            const text = event.target.text.value;
+
+            let obj = {
+                task: task,
+                text: text
+            }
+            // showTodoListOnScreen();
+
+            axios
+            .post("https://crudcrud.com/api/50069e59f03c4b3cb309590e70190d02/listOfTodo", obj)
+            .then((res) => {
+                 showTodoListOnScreen(res.data)
+            })
+             .catch((err) => {
+                 console.log(err);
+            })
+        }
+
+
+        function showTodoListOnScreen(obj){
+            const parentEle = document.getElementById('list1');
+            const childEle = document.createElement('li');
+            childEle.textContent = obj.task + '-' + obj.text;
+            parentEle.appendChild(childEle);
+
+            const todoDone = document.createElement('input');
+            todoDone.type = "button";
+            todoDone.value = "Done";
+            todoDone.onclick = () => {
+                parentEle.removeChild(childEle);
+                parEle.appendChild(childEle);
+            }
+            childEle.appendChild(todoDone);
+
+            const todoFailed = document.createElement('input');
+            todoFailed.type = "button";
+            todoFailed.value = "Failed";
+            todoFailed.onclick = () => {
+                parentEle.removeChild(childEle);
+            }
+            childEle.appendChild(todoFailed);
+
+
+            const parEle = document.getElementById('list2');
+            
+            
+        }
+     </script>
+</body>
+</html>

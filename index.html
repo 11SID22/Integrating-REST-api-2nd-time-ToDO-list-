@@ -39,8 +39,9 @@
             }
             // showTodoListOnScreen();
 
+        // post DaTA TO CRUD CRUD
             axios
-            .post("https://crudcrud.com/api/50069e59f03c4b3cb309590e70190d02/listOfTodo", obj)
+            .post("https://crudcrud.com/api/6dee93771f3648d3bff785a8ae412ad0/listOfTodo", obj)
             .then((res) => {
                  showTodoListOnScreen(res.data)
             })
@@ -49,35 +50,65 @@
             })
         }
 
+        // GET DATA FROM CRUD CRUD
+        window.addEventListener('DOMContentLoaded',() => {
+        axios.get("https://crudcrud.com/api/6dee93771f3648d3bff785a8ae412ad0/listOfTodo")
+        .then((res) => {
+            for(var i=0; i<res.data.length; i++){
+                showTodoListOnScreen(res.data[i])
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+})
+
 
         function showTodoListOnScreen(obj){
-            const parentEle = document.getElementById('list1');
-            const childEle = document.createElement('li');
-            childEle.textContent = obj.task + '-' + obj.text;
-            parentEle.appendChild(childEle);
-
-            const todoDone = document.createElement('input');
-            todoDone.type = "button";
-            todoDone.value = "Done";
-            todoDone.onclick = () => {
-                parentEle.removeChild(childEle);
-                parEle.appendChild(childEle);
-            }
-            childEle.appendChild(todoDone);
-
-            const todoFailed = document.createElement('input');
-            todoFailed.type = "button";
-            todoFailed.value = "Failed";
-            todoFailed.onclick = () => {
-                parentEle.removeChild(childEle);
-            }
-            childEle.appendChild(todoFailed);
-
-
-            const parEle = document.getElementById('list2');
+            document.getElementById('task1').value = '';
+            document.getElementById('text1').value = '';
             
+    
+         const ul = document.getElementById('list1');
+         
+         
+
+         const li = `<li id="${obj._id}"> ${obj.task} - ${obj.text} -
+                            <button onclick=deleteUser('${obj._id}')>ToDo Completed</button>    
+                      </li>`
+         ul.innerHTML = ul.innerHTML + li;
             
+
+         
+
+     }
+
+
+
+        // DELETE DATA FROM CRUD CRUD
+        function deleteUser(itemId){
+        axios.delete(`https://crudcrud.com/api/6dee93771f3648d3bff785a8ae412ad0/listOfTodo/${itemId}`)
+        .then((response) => {
+            removeFromScreen(itemId)
+        })
+        .catch((err)=> {
+            console.log(err)
+        })
+
+        function removeFromScreen(itemId){
+        const ParentNode = document.getElementById('list1')
+        const childNodeToBeDeleted = document.getElementById(itemId);
+
+        const ul1 = document.getElementById('list2');
+        
+
+        if(childNodeToBeDeleted){ 
+        ParentNode.removeChild(childNodeToBeDeleted)
+        ul1.appendChild(childNodeToBeDeleted)
+        
         }
+    }
+    }
      </script>
 </body>
 </html>

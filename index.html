@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-do-list</title>
 </head>
+
 <body>
     <form onsubmit="toDoList(event)">
-    <label for="task">ToDO Name:</label>
-    <input type="text" name="task" id="task1">
-    <label for="text">Description:</label>
-    <input type="text" name="text" id="text1">
-    <button>Add item</button>
+        <label for="task">ToDO Name:</label>
+        <input type="text" name="task" id="task1">
+        <label for="text">Description:</label>
+        <input type="text" name="text" id="text1">
+        <button>Add item</button>
     </form>
 
     <div class="container1">
@@ -21,13 +23,12 @@
     <div class="container2">
         <p>ToDos Done:</p>
         <ul id="list2"></ul>
-     </div>
-     
-     
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+    </div>
 
-     <script>
-        function toDoList(event){
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+
+    <script>
+        async function toDoList(event) {
             event.preventDefault();
 
             const task = event.target.task.value;
@@ -36,79 +37,100 @@
             let obj = {
                 task: task,
                 text: text
-            }
-            // showTodoListOnScreen();
+            };
 
-        // post DaTA TO CRUD CRUD
-            axios
-            .post("https://crudcrud.com/api/6dee93771f3648d3bff785a8ae412ad0/listOfTodo", obj)
-            .then((res) => {
-                 showTodoListOnScreen(res.data)
-            })
-             .catch((err) => {
-                 console.log(err);
-            })
+            try {
+                const response = await axios.post("https://crudcrud.com/api/d7d62474a63f45cdb167cd52712f467c/listOfTodo", obj);
+
+                // Check if the new item is completed and update the UI
+                if (obj.completed) {
+                    showTodoListOnScreen(response.data, true);
+                } else {
+                    showTodoListOnScreen(response.data, false);
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
 
-        // GET DATA FROM CRUD CRUD
-        window.addEventListener('DOMContentLoaded',() => {
-        axios.get("https://crudcrud.com/api/6dee93771f3648d3bff785a8ae412ad0/listOfTodo")
-        .then((res) => {
-            for(var i=0; i<res.data.length; i++){
-                showTodoListOnScreen(res.data[i])
+        async function fetchTodoList() {
+    try {
+        const response = await axios.get("https://crudcrud.com/api/d7d62474a63f45cdb167cd52712f467c/listOfTodo");
+
+        for (const item of response.data) {
+            // Check if the item is completed and update the UI
+            if (item.completed) {
+                showTodoListOnScreen(item, true);
+            } else {
+                showTodoListOnScreen(item, false);
             }
-        })
-        .catch((err) => {
-            console.log(err);
-        })
-})
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchTodoList();
+        });
+
+    function showTodoListOnScreen(obj, completed) {
+    document.getElementById('task1').value = '';
+    document.getElementById('text1').value = '';
+
+    const ul = completed ? document.getElementById('list2') : document.getElementById('list1');
+    const li = `<li id="${obj._id}">${obj.task} - ${obj.text} - ${
+        completed ? 'Completed' : `<button onclick="updateUser('${obj._id}','${obj.task}', '${obj.text}')">ToDo Completed</button>`
+    }</li>`;
+    ul.innerHTML = ul.innerHTML + li;
+}
 
 
-        function showTodoListOnScreen(obj){
-            document.getElementById('task1').value = '';
-            document.getElementById('text1').value = '';
-            
-    
-         const ul = document.getElementById('list1');
-         
-         
+async function updateUser(itemId, task, text) {
+    try {
+        // Send a PUT request to mark the item as completed in the API
+        await axios.put(`https://crudcrud.com/api/d7d62474a63f45cdb167cd52712f467c/listOfTodo/${itemId}`, {
+            itemID: itemId,
+            task: task,
+            text: text,
+            completed: true
+        });
 
-         const li = `<li id="${obj._id}"> ${obj.task} - ${obj.text} -
-                            <button onclick=deleteUser('${obj._id}')>ToDo Completed</button>    
-                      </li>`
-         ul.innerHTML = ul.innerHTML + li;
-            
+        // Remove the item from the UI
+        removeFromScreen(itemId, true);  // Pass true to indicate the task is completed
+    } catch (error) {
+        console.log(error);
+    }
+}
 
-         
+function removeFromScreen(itemId, completed) {
+    const childNodeToBeDeleted = document.getElementById(itemId);
+    const buttonToBeDeleted = childNodeToBeDeleted.querySelector('button');
 
-     }
+    if (buttonToBeDeleted) {
+        buttonToBeDeleted.remove();
 
+        const ulInProgress = document.getElementById('list1');
+        const ulDone = document.getElementById('list2');
 
+        // Move the completed item to the "ToDos Done" list
+        ulDone.appendChild(childNodeToBeDeleted);
 
-        // DELETE DATA FROM CRUD CRUD
-        function deleteUser(itemId){
-        axios.delete(`https://crudcrud.com/api/6dee93771f3648d3bff785a8ae412ad0/listOfTodo/${itemId}`)
-        .then((response) => {
-            removeFromScreen(itemId)
-        })
-        .catch((err)=> {
-            console.log(err)
-        })
+        // Update the completed status in the UI
+        if (completed) {
+            childNodeToBeDeleted.innerHTML += ' - Completed';
+        }
 
-        function removeFromScreen(itemId){
-        const ParentNode = document.getElementById('list1')
-        const childNodeToBeDeleted = document.getElementById(itemId);
-
-        const ul1 = document.getElementById('list2');
-        
-
-        if(childNodeToBeDeleted){ 
-        ParentNode.removeChild(childNodeToBeDeleted)
-        ul1.appendChild(childNodeToBeDeleted)
-        
+        // Remove the item from the "ToDos in Progress" list if it's present
+        if (ulInProgress.contains(childNodeToBeDeleted)) {
+            ulInProgress.removeChild(childNodeToBeDeleted);
         }
     }
-    }
-     </script>
+}
+
+
+        
+    </script>
 </body>
+
 </html>
